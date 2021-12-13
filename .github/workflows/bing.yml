@@ -1,0 +1,50 @@
+name: Bing wallpapers
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 16 * * *'
+
+env:
+    TZ: Asia/Shanghai
+
+jobs:
+  Get:
+    runs-on: ubuntu-latest
+    if: github.repository == 'asvow/ACDN'
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@main
+      with:
+        fetch-depth: 0
+
+    - name: Get Bing wallpapers
+      run: |
+        [[ ! -x "images/background" ]] && mkdir -p images/background
+        [[ -f "images/background/$(date -d -10day +%Y%m%d).jpg" ]] && rm images/background/$(date -d -10day +%Y%m%d).jpg
+        json=`curl -s "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1"`
+        url="https://www.bing.com"`echo $json|grep -Eo '"url":"/.*?"'|awk -F'"' '{print $4}'`
+        wget "$url" -O images/background/$(date +%Y%m%d).jpg
+
+    - name: Commit files
+      run: |
+        git config --local user.email ${{ secrets.EMAIL }}
+        git config --local user.name ${{ secrets.NAME }}
+        git update-ref -d HEAD
+        git add .
+        git commit -m "`date +%B" "%d", "%Y🎉`"
+
+    - name: Push changes
+      uses:  ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.MY_GIT_TOKEN }}
+        branch: main
+        force: true
+
+    - name: Delete Workflow Runs
+      uses: Mattraks/delete-workflow-runs@main
+      with:
+        token: ${{ github.token }}
+        repository: ${{ github.repository }}
+        retain_days: 0
+        keep_minimum_runs: 0
