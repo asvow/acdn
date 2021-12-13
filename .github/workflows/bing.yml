@@ -20,25 +20,25 @@ jobs:
 
     - name: Get Bing wallpapers
       run: |
-        [[ ! -x "images/background" ]] && mkdir -p images/background
-        [[ -f "images/background/$(date -d -10day +%Y%m%d).jpg" ]] && rm images/background/$(date -d -10day +%Y%m%d).jpg
+        git checkout daily
+        [[ -f "$(date -d -10day +%Y%m%d).jpg" ]] && rm $(date -d -10day +%Y%m%d).jpg
         json=`curl -s "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1"`
         url="https://www.bing.com"`echo $json|grep -Eo '"url":"/.*?"'|awk -F'"' '{print $4}'`
-        wget "$url" -O images/background/$(date +%Y%m%d).jpg
+        wget "$url" -O $(date +%Y%m%d).jpg
 
     - name: Commit files
       run: |
         git config --local user.email ${{ secrets.EMAIL }}
         git config --local user.name ${{ secrets.NAME }}
         git update-ref -d HEAD
-        git add .
+        git add -A
         git commit -m "`date +%B" "%d", "%Y🎉`"
 
     - name: Push changes
       uses:  ad-m/github-push-action@master
       with:
         github_token: ${{ secrets.MY_GIT_TOKEN }}
-        branch: main
+        branch: daily
         force: true
 
     - name: Delete Workflow Runs
