@@ -22,7 +22,7 @@ jobs:
       run: |
         git checkout daily
         [[ -f "$(date -d -10day +%Y%m%d).jpg" ]] && rm $(date -d -10day +%Y%m%d).jpg
-        json=`curl -s "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1"`
+        json=`curl -s "https://global.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&setmkt=zh-cn&setlang=zh-cn"`
         url="https://www.bing.com"`echo $json|grep -Eo '"url":"/.*?"'|awk -F'"' '{print $4}'`
         wget "$url" -O $(date +%Y%m%d).jpg
 
